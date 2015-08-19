@@ -508,6 +508,24 @@ describe "Sensu::API::Process" do
     end
   end
 
+  it "can not issue a check request for a nonexistent defined client" do
+    api_test do
+      options = {
+        :body => {
+          :check => "nonexistent",
+          :client => [
+            "i-1234444"
+          ]
+        }
+      }
+      api_request("/request", :post, options) do |http, body|
+        expect(http.response_header.status).to eq(404)
+        expect(body).to be_empty
+        async_done
+      end
+    end
+  end
+
   it "can create a stash (json document)" do
     api_test do
       options = {
