@@ -46,6 +46,11 @@ module Helpers
     end
   end
 
+  def direct_recheck_queue(client, &callback)
+    transport.subscribe(:direct, client, check) do |_, payload|
+      callback.call(payload)
+    end
+
   def timer(delay, &callback)
     periodic_timer = EM::PeriodicTimer.new(delay) do
       callback.call

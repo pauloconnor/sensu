@@ -195,7 +195,7 @@ describe "Sensu::Client::Process" do
 
   it "can receive a check request and execute the standalone check" do
     async_wrapper do
-      result_queue do |payload|
+      direct_recheck_queue do |payload|
         result = MultiJson.load(payload)
         expect(result[:client]).to eq("i-424242")
         expect(result[:check]).to have_key(:issued)
