@@ -193,6 +193,29 @@ describe "Sensu::Client::Process" do
     end
   end
 
+  it "can receive a check request and execute the standalone check" do
+    async_wrapper do
+      expected = ["standalone", "sensu_gc_metrics"]
+      result_queue do |payload|
+        result = MultiJson.load(payload)
+        expect(result[:client]).to eq("i-424242")
+        expect(result[:check]).to have_key(:issued)
+        expect(result[:check]).to have_key(:output)
+        expect(result[:check]).to have_key(:status)
+        expect(result[:check][:output]).to eq("WARNING\n")
+        expect(result[:check][:status]).to eq(1)
+        async_done
+      end
+      timer(0.5) do
+        @client.setup_transport
+        @client.setup_subscriptions
+        timer(1) do
+          transport.publish(:fanout, "i-424242", MultiJson.dump(check_template))
+        end
+      end
+    end
+  end
+
   it "can schedule standalone check execution" do
     async_wrapper do
       expected = ["standalone", "sensu_gc_metrics"]
