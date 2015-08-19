@@ -445,7 +445,7 @@ describe "Sensu::API::Process" do
         :body => {
           :check => "standalone",
           :clients => [
-            "i-888888"
+            "i-424242"
           ]
         }
       }
