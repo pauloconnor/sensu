@@ -200,10 +200,7 @@ describe "Sensu::Client::Process" do
         result = MultiJson.load(payload)
         expect(result[:client]).to eq("i-424242")
         expect(result[:check]).to have_key(:issued)
-        expect(result[:check]).to have_key(:output)
-        expect(result[:check]).to have_key(:status)
-        expect(result[:check][:output]).to eq("WARNING\n")
-        expect(result[:check][:status]).to eq(1)
+        expect(result[:name]).to eq("test")
         async_done
       end
       timer(0.5) do
