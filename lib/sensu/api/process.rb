@@ -446,12 +446,14 @@ module Sensu
       apost "/request/?" do
         rules = {
           :check => {:type => String, :nil_ok => false},
-          :subscribers => {:type => Array, :nil_ok => true}
+          :subscribers => {:type => Array, :nil_ok => true},
+          :clients => {:type =>  Array, :nil_ok => true}
         }
         read_data(rules) do |data|
           if settings.checks[data[:check]]
             check = settings.checks[data[:check]]
             subscribers = data[:subscribers] || check[:subscribers] || Array.new
+            clients = data[:clients] || Array.new
             payload = {
               :name => data[:check],
               :command => check[:command],
@@ -459,16 +461,31 @@ module Sensu
             }
             settings.logger.info("publishing check request", {
               :payload => payload,
-              :subscribers => subscribers
+              :subscribers => subscribers,
+              :clients => clients
             })
-            subscribers.uniq.each do |exchange_name|
-              settings.transport.publish(:fanout, exchange_name.to_s, MultiJson.dump(payload)) do |info|
-                if info[:error]
-                  settings.logger.error("failed to publish check request", {
-                    :exchange_name => exchange_name,
-                    :payload => payload,
-                    :error => info[:error].to_s
-                  })
+            if subscribers
+              subscribers.uniq.each do |exchange_name|
+                settings.transport.publish(:fanout, exchange_name.to_s, MultiJson.dump(payload)) do |info|
+                  if info[:error]
+                    settings.logger.error("failed to publish check request", {
+                      :exchange_name => exchange_name,
+                      :payload => payload,
+                      :error => info[:error].to_s
+                    })
+                  end
+                end
+              end
+            elsif clients
+              clients.uniq.each do |exchange_name|
+                settings.transport.publish(:fanout, exchange_name.to_s, MultiJson.dump(payload)) do |info|
+                  if info[:error]
+                    settings.logger.error("failed to publish check request", {
+                      :exchange_name => exchange_name,
+                      :payload => payload,
+                      :error => info[:error].to_s
+                    })
+                  end
                 end
               end
             end

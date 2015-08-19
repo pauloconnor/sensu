@@ -439,6 +439,24 @@ describe "Sensu::API::Process" do
     end
   end
 
+  it "can issue a standalone check request" do
+    api_test do
+      options = {
+        :body => {
+          :check => "standalone",
+          :clients => [
+            "i-888888"
+          ]
+        }
+      }
+      api_request("/request", :post, options) do |http, body|
+        expect(http.response_header.status).to eq(202)
+        expect(body).to include(:issued)
+        async_done
+      end
+    end
+  end
+
   it "can not issue a check request with an invalid post body" do
     api_test do
       options = {

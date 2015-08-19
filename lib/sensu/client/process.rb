@@ -331,6 +331,20 @@ module Sensu
           check[:standalone] && check[:interval].is_a?(Integer)
         end
         schedule_checks(standard_checks + extension_checks)
+        @logger.debug("subscribing to a check ", :client => @settings[:client][:name])
+        options = transport_subscribe_options(@settings[:client][:name])
+        @transport.subscribe(*options) do |message_info, message|
+          begin
+            check = MultiJson.load(message)
+            @logger.info("received check request", :check => check)
+            process_check_request(check)
+          rescue MultiJson::ParseError => error
+            @logger.error("failed to parse the check request payload", {
+              :message => message,
+              :error => error.to_s
+            })
+          end
+        end
       end
 
       # Setup the Sensu client socket, for external check result
