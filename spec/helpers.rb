@@ -46,8 +46,8 @@ module Helpers
     end
   end
 
-  def direct_recheck_queue(client, &callback)
-    transport.subscribe(:direct, client, check) do |_, payload|
+  def direct_recheck_queue(&callback)
+    transport.subscribe(:direct, "i-424242", check) do |_, payload|
       callback.call(payload)
     end
 
