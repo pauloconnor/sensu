@@ -50,6 +50,7 @@ module Helpers
     transport.subscribe(:direct, "i-424242", check) do |_, payload|
       callback.call(payload)
     end
+  end
 
   def timer(delay, &callback)
     periodic_timer = EM::PeriodicTimer.new(delay) do
